@@ -14,13 +14,26 @@ struct GameView: View {
     var body: some View {
         GeometryReader{ geometry in
             VStack{
-                Picker("Select a difficulty Level", selection: $viewModel.difficulty) {
-                    ForEach(Difficulty.allCases, id: \.self) { level in
-                        Text(level.stringValue())
+                HStack{
+                    Text("Select a difficulty level")
+                    Picker("Select a difficulty Level", selection: $viewModel.difficulty) {
+                        ForEach(Difficulty.allCases, id: \.self) { level in
+                            Text(level.stringValue())
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .disabled(viewModel.isGameStarted)
                 }
-                .pickerStyle(.menu)
-                .disabled(viewModel.isGameStarted)
+                HStack{
+                    Text("Select your mark")
+                    Picker("Select your mark", selection: $viewModel.moveSign) {
+                        ForEach(MoveSign.allCases, id: \.self) { sign in
+                            Text(sign.stringValue())
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(viewModel.isGameStarted)
+                }
                 Button(action: {
                     viewModel.isGameStarted.toggle()
                     if !viewModel.isGameStarted{ viewModel.resetGame() }
@@ -36,8 +49,19 @@ struct GameView: View {
 enum Player{
     case human, computer
 }
+enum MoveSign: CaseIterable{
+    case X, O
+    func stringValue() -> String {
+        switch(self) {
+        case .X:
+            return "X"
+        case .O:
+            return "O"
+        }
+    }
+}
 
-enum Difficulty: Int, CaseIterable{
+enum Difficulty: CaseIterable{
     case easy,medium,hard
     func stringValue() -> String {
         switch(self) {
@@ -54,9 +78,10 @@ enum Difficulty: Int, CaseIterable{
 struct Move{
     let player: Player
     let boardIndex: Int
+    let moveSign: MoveSign
     
     var indicator: String{
-        return player == .human ? "xmark" : "circle"
+        return player == .human && moveSign == .X ? "xmark" : player == .computer && moveSign == .X ? "circle" : player == .human && moveSign == .O ? "circle" : "xmark"
     }
 }
 

@@ -16,12 +16,13 @@ final class GameViewModel: ObservableObject{
     @Published var isGameStarted = false
     @Published var alertItem: AlertItem?
     @Published var difficulty: Difficulty = .easy
+    @Published var moveSign: MoveSign = .X
     
     func processPlayerMove(for position: Int){
         
         //human move processing
         if isSquareOcuupied(in: moves, forIndex: position){ return }
-        moves[position] = Move(player: .human, boardIndex: position)
+        moves[position] = Move(player: .human, boardIndex: position,moveSign: moveSign)
         
         if checkWinCondition(for: .human, in: moves){
             alertItem = AlertContext.humanWin
@@ -40,7 +41,7 @@ final class GameViewModel: ObservableObject{
         //computer move processing
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){ [self] in
             let computerPosition = self.determineComputerMovePosition(in: moves)
-            moves[computerPosition] = Move(player: .computer, boardIndex: computerPosition)
+            moves[computerPosition] = Move(player: .computer, boardIndex: computerPosition,moveSign: moveSign)
             isGameBoardDisbaled = false
             
             if checkWinCondition(for: .computer, in: moves){
@@ -61,7 +62,7 @@ final class GameViewModel: ObservableObject{
     }
     
     func determineComputerMovePosition(in moves: [Move?]) -> Int{
-        if difficulty == .medium{
+        if difficulty == .medium || difficulty == .hard{
             // If AI can win, then win
             let winPatterns: Set<Set<Int>> = [[0, 1, 2],[3, 4, 5],[6, 7, 8],[0, 4, 8],[0, 3, 6],[1, 4, 7],[2, 5, 8],[2, 4, 6]]
             
@@ -87,7 +88,8 @@ final class GameViewModel: ObservableObject{
                     if isAvailable { return winPositions.first! }
                 }
             }
-        }else if difficulty == .hard{
+        }
+        if difficulty == .hard{
             // If AI can't block, then take middle sqaure
             
             let centerSquare = 4
